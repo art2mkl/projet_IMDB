@@ -33,13 +33,15 @@ class Dbase:
             # APPEND values to lists
                 titles_name.append(div.find(class_='lister-item-header').find('a').text)    
                 movies_grade.append(div.find(class_='ratings-bar').find('strong').text)
-                movies_genre.append((div.find(class_="genre").text.strip('\n').strip()).split(','))
+                movies_genre.append((div.find(class_="genre").text.strip('\n').replace(' ', '')).split(','))
                 movies_year.append(div.find(class_="lister-item-year").text.replace('(','').replace(')','').replace('I ', ''))
                 voices_count.append(div.find(class_="sort-num_votes-visible").find_all('span')[1].text.replace(',', ''))
                 
                 # SELECT gross and transform missing values to Nan
                 if len(div.find(class_="sort-num_votes-visible").find_all('span')) == 5:
-                    movies_gross.append(div.find(class_="sort-num_votes-visible").find_all('span')[4].text.replace('$', '').replace('M', ''))
+                    movies_gross.append(div.find(class_="sort-num_votes-visible")
+                                        .find_all('span')[4].text.replace('$', '')
+                                        .replace('M', ''))
                 else:
                     movies_gross.append(np.nan)
                 

@@ -4,18 +4,15 @@ import pandas as pd
 import numpy as np
 
 
-# à intégrer dans le fichier .py
+# CREATION of Class
 class Dbase:
+    #REQUEST url
     def connect_IMDB(self,i):
         url = f"https://www.imdb.com/search/title/?groups=top_250&sort=user_rating,desc&start={i}&ref_=adv_nxt"
         response = requests.get(url)
         html_parsed = BeautifulSoup(response.text, 'html.parser')
         return html_parsed.find_all(class_='lister-item-content')
-    
-    def imdb_requests(self):
-        tabG = self.get_elements()
-        return self.createDf(tabG)
-
+    #SCRAPING values from IMDB
     def get_elements(self):
         num_requests = [1, 51, 101, 151, 201]
         titles_name = []
@@ -25,9 +22,16 @@ class Dbase:
         movies_director = []
         movies_genre = []
         movies_gross = []
-
+        director_1 = []
+        director_2 = []
+        director_3 = []
+        nb_directors = []
+        genre_1 = []
+        genre_2 = []
+        genre_3 = []
+        nb_genres = []
+        
         for i in num_requests:
-            # recupération des données à scraper
             div_content = self.connect_IMDB(i)
             for div in div_content:
             # APPEND values to lists
@@ -54,53 +58,44 @@ class Dbase:
                     elif '<span' in str(i):
                         break
                 movies_director.append(first_director)
+        #Call to function       
+        self.create_multiple_columns(genre_1, genre_2, genre_3, nb_genres, movies_genre)
+        self.create_multiple_columns(director_1, director_2, director_3, nb_directors, movies_director)
+        
+        return [titles_name,
+                genre_1,
+                genre_2,
+                genre_3,
+                nb_genres,
+                movies_year,
+                director_1,
+                director_2,
+                director_3,
+                nb_directors,
+                movies_grade,
+                voices_count,
+                movies_gross]
             
-        # CREATION of 3 lists
-        director_1 = []
-        director_2 = []
-        director_3 = []
-        nb_directors = []
-
-        # ITERATE on each list 
-        for i in movies_director:
-            nb_directors.append(len(i))
+        
+        # ITERATE and append on the multiple lists
+    def create_multiple_columns(self, column_1, column_2, column_3, nb_column, previous_column):
+        for i in previous_column:
+            nb_column.append(len(i))
             if len(i) == 1:
-                director_1.append(i[0])
-                director_2.append(i[0])
-                director_3.append(i[0])
+                column_1.append(i[0])
+                column_2.append(i[0])
+                column_3.append(i[0])
             elif len(i) == 2:
-                director_1.append(i[0])
-                director_2.append(i[1])
-                director_3.append(i[1])
+                column_1.append(i[0])
+                column_2.append(i[1])
+                column_3.append(i[1])
             elif len(i) == 3:
-                director_1.append(i[0])
-                director_2.append(i[1])
-                director_3.append(i[2]) 
+                column_1.append(i[0])
+                column_2.append(i[1])
+                column_3.append(i[2]) 
+        return nb_column, column_1, column_2, column_3
 
-        #CREATION of 3 lists
-        genre_1 = []
-        genre_2 = []
-        genre_3 = []
-        nb_genres = []
-
-        #ITERATE on each list 
-        for i in movies_genre:
-            nb_genres.append(len(i))
-            if len(i) == 1:
-                genre_1.append(i[0])
-                genre_2.append(i[0])
-                genre_3.append(i[0])
-            elif len(i) == 2:
-                genre_1.append(i[0])
-                genre_2.append(i[1])
-                genre_3.append(i[1])
-            elif len(i) == 3:
-                genre_1.append(i[0])
-                genre_2.append(i[1])
-                genre_3.append(i[2]) 
-
-        return [titles_name,genre_1,genre_2,genre_3,nb_genres,movies_year,director_1,director_2,director_3,nb_directors,movies_grade,voices_count,movies_gross]  
-
+    # Create DF to jupyter
     def createDf(self,tabG):
         df1 = pd.DataFrame()
 
@@ -128,7 +123,6 @@ class Dbase:
 
         #MODIFICATION type of votes in integer
         df1['votes'] = list(map(int, tabG[11]))
-        #df1['votes'] = df1['votes'].astype(dtype='int64')
 
         #MODIFICATION type of gross in float
         df1['gross(M$)'] = list(map(float, tabG[12]))
@@ -153,3 +147,6 @@ class Dbase:
         return df2
 
 
+    def imdb_requests(self):
+        tabG = self.get_elements()
+        return self.createDf(tabG)
